@@ -15,11 +15,4 @@
 		<nature>org.eclipse.xtext.ui.shared.xtextNature</nature>
 		<nature>gama.ui.application.gamaNature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>models/AfricanSavannah1.gaml</name>
-			<type>1</type>
-			<location>C:/Users/annap/iCloudDrive/PLUS/3. Semester/Spatial simulation/Tasks/AfricanSavannah.gaml</location>
-		</link>
-	</linkedResources>
 </projectDescription>
