@@ -3,6 +3,7 @@
 * Description: A simple African Savannah.
 * Step 1 – 20 lions (orange circles, diameter 3) walking around randomly with a 40° amplitude.
 * Step 2 – 20 zebras (grey triangles, side 2) walking around randomly with a 60° amplitude.
+* Step 3 – a lion that runs into a zebra (within 2.5) kills it with "die", one zebra per step; a monitor shows the zebras left.
 */
 
 model AI_AfricanSavannah
@@ -33,6 +34,20 @@ species lion skills: [moving] {
 	// Reflex run every cycle: the lion moves one step, turning only within the given amplitude
 	reflex walk_randomly {
 		do wander amplitude: wander_amplitude;
+	}
+
+	// Distance at which the lion touches a zebra and kills it (lion radius 1.5 + about half a zebra 1.0)
+	float kill_distance <- 2.5;
+
+	// Reflex run every cycle after walking: kills one zebra the lion has run into, if there is one
+	reflex kill_zebra {
+		// One zebra within reach, or nil if no zebra is close enough
+		zebra prey <- one_of(zebra at_distance kill_distance);
+		if (prey != nil) {
+			ask prey {
+				do die;
+			}
+		}
 	}
 
 	// Default aspect: draws the lion as an orange circle with a diameter of 'size'
@@ -69,5 +84,7 @@ experiment savannah type: gui {
 			species lion aspect: default;
 			species zebra aspect: default;
 		}
+		// Monitor showing how many zebras are still alive
+		monitor "Number of zebras" value: length(zebra);
 	}
 }
