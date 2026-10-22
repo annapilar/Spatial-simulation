@@ -88,7 +88,7 @@ grid grassland width: 100 height: 100 neighbors: 8 {
 	// Amount of grass added to the cell each time step (kg), linear growth
 	float growth_rate <- 0.1;
 	// Colour of the cell: light yellow-brown = little grass, dark green = much grass
-	rgb color <- #green update: blend(#darkgreen, #khaki, min(biomass / 10.0, 1.0));
+	rgb color <- blend(#darkgreen, #khaki, min(biomass / 10.0, 1.0)) update: blend(#darkgreen, #khaki, min(biomass / 10.0, 1.0));
 
 	// Reflex run every cycle: the grass grows linearly by the growth rate
 	reflex grow {
@@ -96,7 +96,7 @@ grid grassland width: 100 height: 100 neighbors: 8 {
 	}
 }
 
-// GUI experiment that shows the savannah and its lions
+// GUI experiment that shows the savannah with its grassland, lions and zebras
 experiment savannah type: gui {
 	// Slider to adjust the speed of the lions
 	parameter "Lion speed" var: lion_speed min: 0.0 max: 5.0 category: "Lions";
@@ -104,7 +104,7 @@ experiment savannah type: gui {
 	parameter "Zebra speed" var: zebra_speed min: 0.0 max: 5.0 category: "Zebras";
 
 	output {
-		// 2D display of the environment with all lions drawn in it
+		// 2D display of the environment with the grassland, lions and zebras drawn in it
 		display savannah_map {
 			// Grass cells of the grassland, coloured by their biomass
 			grid grassland;
