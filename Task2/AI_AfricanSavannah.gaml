@@ -5,6 +5,7 @@
 * Step 2 – 20 zebras (grey triangles, side 2) walking around randomly with a 60° amplitude.
 * Step 3 – a lion that runs into a zebra (within 2.5) kills it with "die", one zebra per step; a monitor shows the zebras left.
 * Step 4 – grassland CA (100 x 100 cells) with random biomass 0–10 kg, linear growth of 0.1 kg per step, coloured by biomass.
+* Step 5 – zebras eat 0.5 kg of grass per step from the cell they stand on; biomass never drops below 0.
 */
 
 model AI_AfricanSavannah
@@ -73,6 +74,18 @@ species zebra skills: [moving] {
 	// Reflex run every cycle: the zebra moves one step at the zebra speed, turning only within the given amplitude
 	reflex walk_randomly {
 		do wander speed: zebra_speed amplitude: wander_amplitude;
+	}
+
+	// Amount of grass the zebra eats per time step (kg)
+	float eat_amount <- 0.5;
+
+	// Reflex run every cycle after walking: the zebra eats grass from the cell it is standing on
+	reflex eat_grass {
+		// Grass cell the zebra is currently standing on
+		grassland my_cell <- grassland closest_to self;
+		// The zebra cannot eat more than the cell contains, so biomass never drops below 0
+		float eaten <- min(eat_amount, my_cell.biomass);
+		my_cell.biomass <- my_cell.biomass - eaten;
 	}
 
 	// Default aspect: draws the zebra as a grey triangle of the given size
