@@ -6,6 +6,7 @@
 * Step 3 – a lion that runs into a zebra (within 2.5) kills it with "die", one zebra per step; a monitor shows the zebras left.
 * Step 4 – grassland CA (100 x 100 cells) with random biomass 0–10 kg, linear growth of 0.1 kg per step, coloured by biomass.
 * Step 5 – zebras eat 0.5 kg of grass per step from the cell they stand on; biomass never drops below 0.
+* Step 6 – lions lose 0.1 energy per metre moved, gain 5 per zebra eaten and starve at 0; starting energy adjustable (1–50); monitors for lions and their average energy.
 */
 
 model AI_AfricanSavannah
@@ -20,6 +21,8 @@ global {
 	float lion_speed <- 1.0;
 	// Speed of all zebras (metres per step)
 	float zebra_speed <- 1.0;
+	// Energy every lion starts with
+	float lion_start_energy <- 10.0;
 
 	// Initialisation: creates the lions and zebras at random locations in the environment
 	init {
@@ -36,10 +39,18 @@ species lion skills: [moving] {
 	rgb color <- #orange;
 	// Maximum change of direction per step (degrees); the new heading is picked within ±amplitude/2 of the current one
 	float wander_amplitude <- 40.0;
+	// Current energy of the lion: decreases when moving, increases when eating a zebra
+	float energy <- lion_start_energy;
+	// Energy lost per metre the lion moves
+	float energy_loss_per_metre <- 0.1;
+	// Energy gained from eating one zebra
+	float energy_gain <- 5.0;
 
 	// Reflex run every cycle: the lion moves one step at the lion speed, turning only within the given amplitude
 	reflex walk_randomly {
 		do wander speed: lion_speed amplitude: wander_amplitude;
+		// Moving costs energy: the further the lion moves (higher speed), the more energy it loses
+		energy <- energy - energy_loss_per_metre * lion_speed;
 	}
 
 	// Distance at which the lion touches a zebra and kills it (lion radius 1.5 + about half a zebra 1.0)
@@ -53,7 +64,14 @@ species lion skills: [moving] {
 			ask prey {
 				do die;
 			}
+			// Eating the zebra gives the lion energy
+			energy <- energy + energy_gain;
 		}
+	}
+
+	// Reflex run every cycle after hunting: the lion dies of starvation when it has no energy left
+	reflex starve when: energy <= 0 {
+		do die;
 	}
 
 	// Default aspect: draws the lion as an orange circle with a diameter of 'size'
@@ -115,6 +133,8 @@ grid grassland width: 100 height: 100 neighbors: 8 {
 experiment savannah type: gui {
 	// Slider to adjust the speed of the lions
 	parameter "Lion speed" var: lion_speed min: 0.0 max: 5.0 category: "Lions";
+	// Slider to adjust the starting energy of the lions (applies when the simulation is (re)started)
+	parameter "Lion starting energy" var: lion_start_energy min: 1.0 max: 50.0 category: "Lions";
 	// Slider to adjust the speed of the zebras
 	parameter "Zebra speed" var: zebra_speed min: 0.0 max: 5.0 category: "Zebras";
 
@@ -128,5 +148,9 @@ experiment savannah type: gui {
 		}
 		// Monitor showing how many zebras are still alive
 		monitor "Number of zebras" value: length(zebra);
+		// Monitor showing how many lions are still alive
+		monitor "Number of lions" value: length(lion);
+		// Monitor showing the average energy of the living lions (0 when no lion is left)
+		monitor "Average lion energy" value: empty(lion) ? 0.0 : mean(lion collect each.energy);
 	}
 }
