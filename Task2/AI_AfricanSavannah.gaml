@@ -4,6 +4,7 @@
 * Step 1 – 20 lions (orange circles, diameter 3) walking around randomly with a 40° amplitude.
 * Step 2 – 20 zebras (grey triangles, side 2) walking around randomly with a 60° amplitude.
 * Step 3 – a lion that runs into a zebra (within 2.5) kills it with "die", one zebra per step; a monitor shows the zebras left.
+* Step 4 – grassland CA (100 x 100 cells) with random biomass 0–10 kg, linear growth of 0.1 kg per step, coloured by biomass.
 */
 
 model AI_AfricanSavannah
@@ -80,6 +81,21 @@ species zebra skills: [moving] {
 	}
 }
 
+// Grassland: a cellular automaton (CA) of 100 x 100 grass cells covering the savannah
+grid grassland width: 100 height: 100 neighbors: 8 {
+	// Amount of grass in the cell (kg), random between 0 and 10 kg at the start
+	float biomass <- rnd(10.0);
+	// Amount of grass added to the cell each time step (kg), linear growth
+	float growth_rate <- 0.1;
+	// Colour of the cell: light yellow-brown = little grass, dark green = much grass
+	rgb color <- #green update: blend(#darkgreen, #khaki, min(biomass / 10.0, 1.0));
+
+	// Reflex run every cycle: the grass grows linearly by the growth rate
+	reflex grow {
+		biomass <- biomass + growth_rate;
+	}
+}
+
 // GUI experiment that shows the savannah and its lions
 experiment savannah type: gui {
 	// Slider to adjust the speed of the lions
@@ -90,6 +106,8 @@ experiment savannah type: gui {
 	output {
 		// 2D display of the environment with all lions drawn in it
 		display savannah_map {
+			// Grass cells of the grassland, coloured by their biomass
+			grid grassland;
 			species lion aspect: default;
 			species zebra aspect: default;
 		}
