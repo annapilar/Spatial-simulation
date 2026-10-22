@@ -77,7 +77,7 @@ species zebra skills: [moving] {
 	}
 
 	// Amount of grass the zebra eats per time step (kg)
-	float eat_amount <- 0.5;
+	float eat_amount <- 2.5;
 
 	// Reflex run every cycle after walking: the zebra eats grass from the cell it is standing on
 	reflex eat_grass {
@@ -100,12 +100,14 @@ grid grassland width: 100 height: 100 neighbors: 8 {
 	float biomass <- rnd(10.0);
 	// Amount of grass added to the cell each time step (kg), linear growth
 	float growth_rate <- 0.1;
+	// Maximum amount of grass a cell can hold (kg)
+	float max_biomass <- 10.0;
 	// Colour of the cell: light yellow-brown = little grass, dark green = much grass
 	rgb color <- blend(#darkgreen, #khaki, min(biomass / 10.0, 1.0)) update: blend(#darkgreen, #khaki, min(biomass / 10.0, 1.0));
 
-	// Reflex run every cycle: the grass grows linearly by the growth rate
+	// Reflex run every cycle: the grass grows linearly by the growth rate, up to the maximum biomass
 	reflex grow {
-		biomass <- biomass + growth_rate;
+		biomass <- min(biomass + growth_rate, max_biomass);
 	}
 }
 
