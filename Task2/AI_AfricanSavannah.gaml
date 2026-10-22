@@ -14,6 +14,10 @@ global {
 	int nb_lions <- 20;
 	// Number of zebras created when the simulation starts
 	int nb_zebras <- 20;
+	// Speed of all lions (metres per step)
+	float lion_speed <- 1.0;
+	// Speed of all zebras (metres per step)
+	float zebra_speed <- 1.0;
 
 	// Initialisation: creates the lions and zebras at random locations in the environment
 	init {
@@ -31,9 +35,9 @@ species lion skills: [moving] {
 	// Maximum change of direction per step (degrees); the new heading is picked within ±amplitude/2 of the current one
 	float wander_amplitude <- 40.0;
 
-	// Reflex run every cycle: the lion moves one step, turning only within the given amplitude
+	// Reflex run every cycle: the lion moves one step at the lion speed, turning only within the given amplitude
 	reflex walk_randomly {
-		do wander amplitude: wander_amplitude;
+		do wander speed: lion_speed amplitude: wander_amplitude;
 	}
 
 	// Distance at which the lion touches a zebra and kills it (lion radius 1.5 + about half a zebra 1.0)
@@ -65,9 +69,9 @@ species zebra skills: [moving] {
 	// Maximum change of direction per step (degrees); the new heading is picked within ±amplitude/2 of the current one
 	float wander_amplitude <- 60.0;
 
-	// Reflex run every cycle: the zebra moves one step, turning only within the given amplitude
+	// Reflex run every cycle: the zebra moves one step at the zebra speed, turning only within the given amplitude
 	reflex walk_randomly {
-		do wander amplitude: wander_amplitude;
+		do wander speed: zebra_speed amplitude: wander_amplitude;
 	}
 
 	// Default aspect: draws the zebra as a grey triangle of the given size
@@ -78,6 +82,11 @@ species zebra skills: [moving] {
 
 // GUI experiment that shows the savannah and its lions
 experiment savannah type: gui {
+	// Slider to adjust the speed of the lions
+	parameter "Lion speed" var: lion_speed min: 0.0 max: 5.0 category: "Lions";
+	// Slider to adjust the speed of the zebras
+	parameter "Zebra speed" var: zebra_speed min: 0.0 max: 5.0 category: "Zebras";
+
 	output {
 		// 2D display of the environment with all lions drawn in it
 		display savannah_map {
