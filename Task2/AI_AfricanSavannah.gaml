@@ -5,7 +5,7 @@
 * Step 2 – 20 zebras (grey triangles, side 2) walking around randomly with a 60° amplitude.
 * Step 3 – a lion that runs into a zebra (within 2.5) kills it with "die", one zebra per step; a monitor shows the zebras left.
 * Step 4 – grassland CA (100 x 100 cells) with random biomass 0–10 kg, linear growth of 0.1 kg per step, coloured by biomass.
-* Step 5 – zebras eat 0.5 kg of grass per step from the cell they stand on; biomass never drops below 0.
+* Step 5 – zebras eat 2.5 kg of grass per step from the cell they stand on; biomass never drops below 0.
 * Step 6 – lions lose 0.1 energy per metre moved, gain 5 per zebra eaten and starve at 0; starting energy adjustable (1–50); monitors for lions and their average energy.
 */
 
