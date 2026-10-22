@@ -1,6 +1,8 @@
 /**
 * Name: AI_AfricanSavannah
-* Description: Step 1 – a simple African Savannah with 20 lions walking around randomly.
+* Description: A simple African Savannah.
+* Step 1 – 20 lions (orange circles, diameter 3) walking around randomly with a 40° amplitude.
+* Step 2 – 20 zebras (grey triangles, side 2) walking around randomly with a 60° amplitude.
 */
 
 model AI_AfricanSavannah
