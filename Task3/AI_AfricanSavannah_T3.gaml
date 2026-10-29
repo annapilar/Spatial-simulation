@@ -1,6 +1,6 @@
 /**
 * Name: AI_AfricanSavannah_T3
-* Version: 3.4
+* Version: 3.5
 * Description: A simple African Savannah.
 * Step 1 – 20 lions (orange circles, diameter 3) walking around randomly with a 40° amplitude.
 * Step 2 – 20 zebras (grey triangles, side 2) walking around randomly with a 60° amplitude.
@@ -106,7 +106,14 @@ species lion skills: [moving] {
 
 	// Reflex run every cycle after ageing: the lion dies of old age when it is older than the maximum age
 	reflex die_of_old_age when: age > max_lion_age {
-		// Remove the lion's age from the list before it dies
+		// Just before the old lion dies, a baby lion is born at its location with age 0
+		create lion {
+			age <- 0;
+			location <- myself.location;
+			// Add the baby's age to the list of lion ages
+			add age to: lion_ages;
+		}
+		// Remove the old lion's age from the list before it dies
 		remove age from: lion_ages;
 		do die;
 	}
