@@ -24,6 +24,8 @@ global {
 	float zebra_speed <- 1.0;
 	// Energy every lion starts with
 	float lion_start_energy <- 10.0;
+	// List of age values: all possible lion ages from 0 to 60 years (60 included), assigned to the lions later
+	list<int> lion_ages <- range(60);
 
 	// Initialisation: creates the lions and zebras at random locations in the environment
 	init {
