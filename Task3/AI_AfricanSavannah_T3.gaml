@@ -27,6 +27,8 @@ global {
 	float lion_start_energy <- 10.0;
 	// List of age values: all possible lion ages from 0 to 60 years (60 included), assigned to the lions later
 	list<int> lion_ages <- range(60);
+	// Maximum age of a lion (years): lions older than this die
+	int max_lion_age <- 60;
 
 	// Initialisation: creates the lions and zebras at random locations in the environment
 	init {
@@ -100,6 +102,13 @@ species lion skills: [moving] {
 		// Ageing: the lion gets one year older each time step
 		age <- age + 1;
 		add age to: lion_ages;
+	}
+
+	// Reflex run every cycle after ageing: the lion dies of old age when it is older than the maximum age
+	reflex die_of_old_age when: age > max_lion_age {
+		// Remove the lion's age from the list before it dies
+		remove age from: lion_ages;
+		do die;
 	}
 
 	// Reflex run every cycle after hunting: the lion dies of starvation when it has no energy left
