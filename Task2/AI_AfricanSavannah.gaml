@@ -11,6 +11,7 @@
 
 model AI_AfricanSavannah
 
+// Global section
 // Global context of the model: holds global variables and creates the initial agents
 global {
 	// Number of lions created when the simulation starts
@@ -31,13 +32,14 @@ global {
 	}
 }
 
+// Agents section
 // Lion species: an agent that walks around randomly in the savannah
 species lion skills: [moving] {
 	// Size (diameter) of the lion's circle
 	float size <- 3.0;
 	// Colour used to draw the lion
 	rgb color <- #orange;
-	// Maximum change of direction per step (degrees); the new heading is picked within ±amplitude/2 of the current one
+	// Maximum change of direction per step (degrees)
 	float wander_amplitude <- 40.0;
 	// Current energy of the lion: decreases when moving, increases when eating a zebra
 	float energy <- lion_start_energy;
@@ -58,7 +60,7 @@ species lion skills: [moving] {
 
 	// Reflex run every cycle after walking: kills one zebra the lion has run into, if there is one
 	reflex kill_zebra {
-		// One zebra within reach, or nil if no zebra is close enough
+		// One zebra within reach, or nil (0) if no zebra is close enough
 		zebra prey <- one_of(zebra at_distance kill_distance);
 		if (prey != nil) {
 			ask prey {
@@ -74,7 +76,7 @@ species lion skills: [moving] {
 		do die;
 	}
 
-	// Default aspect: draws the lion as an orange circle with a diameter of 'size'
+	// Default aspect: draws the lion as an orange circle with a diameter of 'size' (/2 because size uses the radius)
 	aspect default {
 		draw circle(size / 2) color: color;
 	}
@@ -86,7 +88,7 @@ species zebra skills: [moving] {
 	float size <- 2.0;
 	// Colour used to draw the zebra
 	rgb color <- #grey;
-	// Maximum change of direction per step (degrees); the new heading is picked within ±amplitude/2 of the current one
+	// Maximum change of direction per step (degrees)
 	float wander_amplitude <- 60.0;
 
 	// Reflex run every cycle: the zebra moves one step at the zebra speed, turning only within the given amplitude
@@ -112,8 +114,9 @@ species zebra skills: [moving] {
 	}
 }
 
+// Callular automaton (CA) section
 // Grassland: a cellular automaton (CA) of 100 x 100 grass cells covering the savannah
-grid grassland width: 100 height: 100 neighbors: 8 {
+grid grassland width: 100 height: 100 {
 	// Amount of grass in the cell (kg), random between 0 and 10 kg at the start
 	float biomass <- rnd(10.0);
 	// Amount of grass added to the cell each time step (kg), linear growth
@@ -129,6 +132,8 @@ grid grassland width: 100 height: 100 neighbors: 8 {
 	}
 }
 
+
+// Simulation section
 // GUI experiment that shows the savannah with its grassland, lions and zebras
 experiment savannah type: gui {
 	// Slider to adjust the speed of the lions
@@ -151,6 +156,7 @@ experiment savannah type: gui {
 		// Monitor showing how many lions are still alive
 		monitor "Number of lions" value: length(lion);
 		// Monitor showing the average energy of the living lions (0 when no lion is left)
-		monitor "Average lion energy" value: empty(lion) ? 0.0 : mean(lion collect each.energy);
+		monitor "Average lion energy" value: empty(lion) ? 0.0 : mean(lion collect each.energy); 
+		//condition: no lions left: yes -> 0.0, no -> mean of the energy from the lions that are left
 	}
 }
