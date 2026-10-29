@@ -57,8 +57,8 @@ global {
 species lion skills: [moving] {
 	// Size (diameter) of the lion's circle
 	float size <- 3.0;
-	// Colour used to draw the lion
-	rgb color <- #orange;
+	// Colour of the lion: shade of red from the current mean age of the population (light red = young, dark red = 60 years or more)
+	rgb color -> blend(rgb(139, 0, 0), rgb(255, 200, 200), empty(lion_ages) ? 0.0 : min(mean(lion_ages) / 60.0, 1.0));
 	// Maximum change of direction per step (degrees)
 	float wander_amplitude <- 40.0;
 	// Current energy of the lion: decreases when moving, increases when eating a zebra
@@ -108,7 +108,7 @@ species lion skills: [moving] {
 		do die;
 	}
 
-	// Default aspect: draws the lion as an orange circle with a diameter of 'size' (/2 because size uses the radius)
+	// Default aspect: draws the lion as a red circle with a diameter of 'size' (/2 because size uses the radius)
 	aspect default {
 		draw circle(size / 2) color: color;
 	}
