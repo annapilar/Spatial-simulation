@@ -31,6 +31,24 @@ global {
 	init {
 		create lion number: nb_lions;
 		create zebra number: nb_zebras;
+		// Replace the possible age values by the actual ages of all lions
+		lion_ages <- [];
+		ask lion {
+			add age to: lion_ages;
+		}
+	}
+
+	// Reflex run every cycle: reports the number of age values in the list and their minimum, mean and maximum
+	reflex report_lion_ages {
+		if (empty(lion_ages)) {
+			// No lions left: there are no values to calculate
+			write "Cycle " + cycle + ": no lion ages in the list";
+		} else {
+			write "Cycle " + cycle + ": n = " + length(lion_ages)
+				+ ", min = " + min(lion_ages)
+				+ ", mean = " + mean(lion_ages)
+				+ ", max = " + max(lion_ages);
+		}
 	}
 }
 
@@ -49,6 +67,8 @@ species lion skills: [moving] {
 	float energy_loss_per_metre <- 0.1;
 	// Energy gained from eating one zebra
 	float energy_gain <- 5.0;
+	// Age of the lion (years): picked at random from the list of possible age values
+	int age <- one_of(lion_ages);
 
 	// Reflex run every cycle: the lion moves one step at the lion speed, turning only within the given amplitude
 	reflex walk_randomly {
@@ -73,8 +93,18 @@ species lion skills: [moving] {
 		}
 	}
 
+	// Reflex run every cycle: the lion removes its previous age from the list, gets one year older and adds its current age
+	reflex update_age_in_list {
+		remove age from: lion_ages;
+		// Ageing: the lion gets one year older each time step
+		age <- age + 1;
+		add age to: lion_ages;
+	}
+
 	// Reflex run every cycle after hunting: the lion dies of starvation when it has no energy left
 	reflex starve when: energy <= 0 {
+		// Remove the lion's age from the list before it dies
+		remove age from: lion_ages;
 		do die;
 	}
 
@@ -160,5 +190,13 @@ experiment savannah type: gui {
 		// Monitor showing the average energy of the living lions (0 when no lion is left)
 		monitor "Average lion energy" value: empty(lion) ? 0.0 : mean(lion collect each.energy); 
 		//condition: no lions left: yes -> 0.0, no -> mean of the energy from the lions that are left
+		// Monitor showing the number of values in the list of lion ages
+		monitor "Number of lion ages" value: length(lion_ages);
+		// Monitor showing the minimum lion age in the list (0 when the list is empty)
+		monitor "Minimum lion age" value: empty(lion_ages) ? 0 : min(lion_ages);
+		// Monitor showing the mean lion age in the list (0 when the list is empty)
+		monitor "Mean lion age" value: empty(lion_ages) ? 0.0 : mean(lion_ages);
+		// Monitor showing the maximum lion age in the list (0 when the list is empty)
+		monitor "Maximum lion age" value: empty(lion_ages) ? 0 : max(lion_ages);
 	}
 }
