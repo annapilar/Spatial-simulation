@@ -2,7 +2,7 @@
 * Name: Farm
 * Farm simulation, built step by step with AI assistance (Claude Code).
 * Author: annapilar
-* Version: 0.1
+* Version: 0.2
 * Tags: farm
 */
 
@@ -17,6 +17,10 @@ global {
 	int nb_sheep <- 3;
 	// Number of goats created when the simulation starts
 	int nb_goats <- 2;
+	// Speed of all cows (metres per step)
+	float cow_speed <- 2.0;
+	// Turning range of the cows' correlated random walk (degrees): the new heading is within ±45° of the current one
+	float cow_amplitude <- 90.0;
 
 	// Initialisation: runs once when the simulation starts and creates the animals at random locations
 	init {
@@ -26,12 +30,17 @@ global {
 	}
 }
 
-// Species cow: a brown farm animal (no behaviour yet)
-species cow {
+// Species cow: a brown farm animal that moves with a correlated random walk (moving skill)
+species cow skills: [moving] {
 	// Size of the cow: radius of its circle in metres (2.0 m radius = 4 m wide)
 	float size <- 2.0;
 	// Colour of the cow: medium earthy brown (GAMA's #brown is too red)
 	rgb color <- rgb(139, 90, 43);
+
+	// Reflex move: every step the cow walks cow_speed metres and turns randomly within ±cow_amplitude/2 of its current heading (correlated random walk, stays inside the world)
+	reflex move {
+		do wander speed: cow_speed amplitude: cow_amplitude;
+	}
 
 	// Aspect base: draws the cow as a filled brown circle
 	aspect base {
