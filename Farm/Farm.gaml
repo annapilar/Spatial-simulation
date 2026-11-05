@@ -2,7 +2,7 @@
 * Name: Farm
 * Farm simulation, built step by step with AI assistance (Claude Code).
 * Author: annapilar
-* Version: 0.6
+* Version: 1.0
 * Tags: farm
 */
 
@@ -11,6 +11,8 @@ model Farm
 // Global section
 // Global context of the model: holds global variables and creates the initial agents
 global {
+	// Shape of the world: a 40 × 40 m square (instead of the default 100 × 100 m), so the animals appear bigger in the display
+	geometry shape <- square(40);
 	// Number of cows created when the simulation starts
 	int nb_cows <- 5;
 	// Number of sheep created when the simulation starts
@@ -84,10 +86,11 @@ species sheep skills: [moving] {
 		draw circle(size) color: color;
 	}
 
-	// Aspect action_area: draws the sheep's action neighbourhood (line) in white, widened by 0.2 m on each side so it is visible
+	// Aspect action_area: draws the sheep's action neighbourhood (line) in white, widened by 0.2 m on each side so it is visible, and on top a small arrow (head 0.3 m) in the sheep's colour showing its straight direction
 	aspect action_area {
 		if (action_area != nil) {
 			draw action_area + 0.2 color: #white;
+			draw action_area color: color end_arrow: 0.3;
 		}
 	}
 }
@@ -111,10 +114,15 @@ species goat skills: [moving] {
 		draw circle(size) color: color;
 	}
 
-	// Aspect action_area: draws the goat's action neighbourhood (line) in white, widened by 0.2 m on each side so it is visible; nothing is drawn once the goat has reached its target
+	// Aspect action_area: draws the goat's action neighbourhood (line) in white, widened by 0.2 m on each side so it is visible, and on top a small arrow (head 0.3 m) in the goat's colour pointing towards goat_target; nothing is drawn once the goat has reached its target
 	aspect action_area {
 		if (action_area != nil) {
 			draw action_area + 0.2 color: #white;
+		}
+		// Vector from the goat to its target, used to build the arrow from the goat's position in the direction of the target
+		point to_target <- goat_target - location;
+		if (norm(to_target) > 0) {
+			draw line(location, location + to_target / norm(to_target) * min(goat_speed, norm(to_target))) color: color end_arrow: 0.3;
 		}
 	}
 }
