@@ -2,7 +2,7 @@
 * Name: Farm
 * Farm simulation, built step by step with AI assistance (Claude Code).
 * Author: annapilar
-* Version: 0.3
+* Version: 0.4
 * Tags: farm
 */
 
@@ -25,6 +25,10 @@ global {
 	float sheep_speed <- 1.0;
 	// Direction in which all sheep walk (degrees): 0 = east, 90 = south (clockwise, y axis points down)
 	float sheep_heading <- 90.0;
+	// Speed of all goats (metres per step)
+	float goat_speed <- 0.5;
+	// Target the goats walk to: the origin {0, 0}, the top-left (north-west) corner of the world
+	point goat_target <- {0, 0};
 
 	// Initialisation: runs once when the simulation starts and creates the animals at random locations
 	init {
@@ -70,12 +74,17 @@ species sheep skills: [moving] {
 	}
 }
 
-// Species goat: a yellow farm animal (no behaviour yet)
-species goat {
+// Species goat: a yellow farm animal that slowly walks to the origin (moving skill)
+species goat skills: [moving] {
 	// Size of the goat: radius of its circle in metres (1.5 m radius = 3 m wide)
 	float size <- 1.5;
 	// Colour of the goat: warm golden yellow like straw (GAMA's #yellow is too bright)
 	rgb color <- rgb(230, 190, 60);
+
+	// Reflex move: every step the goat walks goat_speed metres in a straight line towards goat_target; all goats end up on the same point
+	reflex move {
+		do goto target: goat_target speed: goat_speed;
+	}
 
 	// Aspect base: draws the goat as a filled yellow circle
 	aspect base {
