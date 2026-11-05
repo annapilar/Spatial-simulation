@@ -2,7 +2,7 @@
 * Name: Farm
 * Farm simulation, built step by step with AI assistance (Claude Code).
 * Author: annapilar
-* Version: 0.2
+* Version: 0.3
 * Tags: farm
 */
 
@@ -21,6 +21,10 @@ global {
 	float cow_speed <- 2.0;
 	// Turning range of the cows' correlated random walk (degrees): the new heading is within ±45° of the current one
 	float cow_amplitude <- 90.0;
+	// Speed of all sheep (metres per step)
+	float sheep_speed <- 1.0;
+	// Direction in which all sheep walk (degrees): 0 = east, 90 = south (clockwise, y axis points down)
+	float sheep_heading <- 90.0;
 
 	// Initialisation: runs once when the simulation starts and creates the animals at random locations
 	init {
@@ -48,12 +52,17 @@ species cow skills: [moving] {
 	}
 }
 
-// Species sheep: a black farm animal (no behaviour yet)
-species sheep {
+// Species sheep: a black farm animal that walks straight south (moving skill)
+species sheep skills: [moving] {
 	// Size of the sheep: radius of its circle in metres (1.5 m radius = 3 m wide)
 	float size <- 1.5;
 	// Colour of the sheep
 	rgb color <- #black;
+
+	// Reflex move: every step the sheep walks sheep_speed metres straight in direction sheep_heading (south); bounds keep it inside the world, so it stops at the south edge
+	reflex move {
+		do move speed: sheep_speed heading: sheep_heading bounds: world.shape;
+	}
 
 	// Aspect base: draws the sheep as a filled black circle
 	aspect base {
