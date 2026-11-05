@@ -2,7 +2,7 @@
 * Name: Farm
 * Farm simulation, built step by step with AI assistance (Claude Code).
 * Author: annapilar
-* Version: 0.4
+* Version: 0.5
 * Tags: farm
 */
 
@@ -96,8 +96,8 @@ species goat skills: [moving] {
 experiment Farm type: gui {
 	// Output section: what is shown while the simulation runs
 	output {
-		// Main display showing the farm environment with all animals
-		display farm_display {
+		// Main display showing the farm environment with all animals on a fresh meadow-green background
+		display farm_display background: rgb(140, 190, 90) {
 			species cow aspect: base;
 			species sheep aspect: base;
 			species goat aspect: base;
