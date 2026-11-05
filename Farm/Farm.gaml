@@ -2,7 +2,7 @@
 * Name: Farm
 * Farm simulation, built step by step with AI assistance (Claude Code).
 * Author: annapilar
-* Version: 0.5
+* Version: 0.6
 * Tags: farm
 */
 
@@ -40,10 +40,12 @@ global {
 
 // Species cow: a brown farm animal that moves with a correlated random walk (moving skill)
 species cow skills: [moving] {
-	// Size of the cow: radius of its circle in metres (2.0 m radius = 4 m wide)
-	float size <- 2.0;
+	// Size of the cow: radius of its circle in metres (0.8 m radius = 1.6 m wide, small enough that the action area (radius 2 m) stays visible)
+	float size <- 0.8;
 	// Colour of the cow: medium earthy brown (GAMA's #brown is too red)
 	rgb color <- rgb(139, 90, 43);
+	// Action neighbourhood of the cow: where it can be in the next step = quarter circle (cow_amplitude = 90°, i.e. ±45° around the current heading) with radius cow_speed; recalculated whenever it is used
+	geometry action_area -> circle(cow_speed) intersection cone(int(heading - cow_amplitude / 2), int(heading + cow_amplitude / 2));
 
 	// Reflex move: every step the cow walks cow_speed metres and turns randomly within ±cow_amplitude/2 of its current heading (correlated random walk, stays inside the world)
 	reflex move {
@@ -54,14 +56,23 @@ species cow skills: [moving] {
 	aspect base {
 		draw circle(size) color: color;
 	}
+
+	// Aspect action_area: draws the cow's action neighbourhood (quarter circle) in white, so it contrasts with the cow and the meadow
+	aspect action_area {
+		if (action_area != nil) {
+			draw action_area color: #white;
+		}
+	}
 }
 
 // Species sheep: a black farm animal that walks straight south (moving skill)
 species sheep skills: [moving] {
-	// Size of the sheep: radius of its circle in metres (1.5 m radius = 3 m wide)
-	float size <- 1.5;
+	// Size of the sheep: radius of its circle in metres (0.5 m radius = 1 m wide, small so that the action area stays visible)
+	float size <- 0.5;
 	// Colour of the sheep
 	rgb color <- #black;
+	// Action neighbourhood of the sheep: it moves straight ahead, so the area is a line of length sheep_speed in direction sheep_heading; recalculated whenever it is used
+	geometry action_area -> line(location, location + {cos(sheep_heading), sin(sheep_heading)} * sheep_speed);
 
 	// Reflex move: every step the sheep walks sheep_speed metres straight in direction sheep_heading (south); bounds keep it inside the world, so it stops at the south edge
 	reflex move {
@@ -72,14 +83,23 @@ species sheep skills: [moving] {
 	aspect base {
 		draw circle(size) color: color;
 	}
+
+	// Aspect action_area: draws the sheep's action neighbourhood (line) in white, widened by 0.2 m on each side so it is visible
+	aspect action_area {
+		if (action_area != nil) {
+			draw action_area + 0.2 color: #white;
+		}
+	}
 }
 
 // Species goat: a yellow farm animal that slowly walks to the origin (moving skill)
 species goat skills: [moving] {
-	// Size of the goat: radius of its circle in metres (1.5 m radius = 3 m wide)
-	float size <- 1.5;
+	// Size of the goat: radius of its circle in metres (0.5 m radius = 1 m wide, small so that the action area stays visible)
+	float size <- 0.5;
 	// Colour of the goat: warm golden yellow like straw (GAMA's #yellow is too bright)
 	rgb color <- rgb(230, 190, 60);
+	// Action neighbourhood of the goat: the part of the line towards goat_target that lies within goat_speed metres; recalculated whenever it is used
+	geometry action_area -> line(location, goat_target) intersection circle(goat_speed);
 
 	// Reflex move: every step the goat walks goat_speed metres in a straight line towards goat_target; all goats end up on the same point
 	reflex move {
@@ -90,17 +110,27 @@ species goat skills: [moving] {
 	aspect base {
 		draw circle(size) color: color;
 	}
+
+	// Aspect action_area: draws the goat's action neighbourhood (line) in white, widened by 0.2 m on each side so it is visible; nothing is drawn once the goat has reached its target
+	aspect action_area {
+		if (action_area != nil) {
+			draw action_area + 0.2 color: #white;
+		}
+	}
 }
 
 // Experiment with a graphical user interface to run and display the farm simulation
 experiment Farm type: gui {
 	// Output section: what is shown while the simulation runs
 	output {
-		// Main display showing the farm environment with all animals on a fresh meadow-green background
+		// Main display showing the farm environment with all animals and their action neighbourhoods (50 % transparent) on a fresh meadow-green background
 		display farm_display background: rgb(140, 190, 90) {
 			species cow aspect: base;
+			species cow aspect: action_area transparency: 0.5;
 			species sheep aspect: base;
+			species sheep aspect: action_area transparency: 0.5;
 			species goat aspect: base;
+			species goat aspect: action_area transparency: 0.5;
 		}
 	}
 }
