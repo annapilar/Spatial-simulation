@@ -2,7 +2,7 @@
 * Name: Farm_verification
 * Farm simulation, built step by step with AI assistance (Claude Code).
 * Author: annapilar
-* Version: 1.3
+* Version: 2.0
 * Tags: farm
 */
 
@@ -31,6 +31,8 @@ global {
 	float goat_speed <- 0.5;
 	// Target the goats walk to: the origin {0, 0}, the top-left (north-west) corner of the world
 	point goat_target <- {0, 0};
+	// Data pool: heading change (degrees) of every cow in every time step so far; each step every cow adds its newest change
+	list<float> cow_direction_changes <- [];
 
 	// Initialisation: runs once when the simulation starts and creates the animals at random locations
 	init {
@@ -51,14 +53,24 @@ species cow skills: [moving] {
 	// Distance (metres) the cow walked in the first time step; -1 means not measured yet
 	float first_step_distance <- -1.0;
 
-	// Reflex move: every step the cow walks cow_speed metres and turns randomly within ±cow_amplitude/2 of its current heading (correlated random walk, stays inside the world); in the first step the distance actually walked is stored in first_step_distance
+	// Reflex move: every step the cow walks cow_speed metres and turns randomly within ±cow_amplitude/2 of its current heading (correlated random walk, stays inside the world); in the first step the distance actually walked is stored in first_step_distance; every step the direction change is added to cow_direction_changes
 	reflex move {
 		// Position of the cow before this step's move, used to measure the distance walked
 		point previous_location <- location;
+		// Heading of the cow before this step's move, used to measure the direction change
+		float previous_heading <- heading;
 		do wander speed: cow_speed amplitude: cow_amplitude;
 		if (first_step_distance < 0) {
 			first_step_distance <- previous_location distance_to location;
 		}
+		// Direction change (degrees) in this step, brought into the range -180 to +180
+		float direction_change <- heading - previous_heading;
+		if (direction_change > 180) {
+			direction_change <- direction_change - 360;
+		} else if (direction_change < -180) {
+			direction_change <- direction_change + 360;
+		}
+		cow_direction_changes << direction_change;
 	}
 
 	// Aspect base: draws the cow as a filled brown circle
@@ -176,6 +188,15 @@ experiment Farm type: gui {
 			chart "Distance walked in the first time step: sheep vs. cows" type: scatter x_label: "Time step (cycle)" y_label: "Distance in step 1 (m)" {
 				data "Sheep" value: sheep collect {1, each.first_step_distance} color: #black;
 				data "Cows" value: cow collect {1, each.first_step_distance} color: rgb(139, 90, 43);
+			}
+		}
+		// Display with a histogram of all cow direction changes so far: 18 bins of 5° from -45° to +45° (only in-range values), plus one extra bar for out-of-range values
+		display cow_turn_histogram {
+			chart "Distribution of cow direction changes (5° bins)" type: histogram x_label: "Direction change (°)" y_label: "Count" {
+				// Bars for the in-range direction changes (between -45° and +45°), in 5° bins
+				datalist (distribution_of(cow_direction_changes where (abs(each) <= 45), 18, -45, 45) at "legend") value: (distribution_of(cow_direction_changes where (abs(each) <= 45), 18, -45, 45) at "values") color: rgb(139, 90, 43);
+				// Bar for out-of-range direction changes (beyond ±45°), e.g. when a cow is deflected at the wall
+				data "out of range" value: cow_direction_changes count (abs(each) > 45) color: #grey;
 			}
 		}
 		// Monitor: number of sheep that have not yet reached the south edge of the world (y below the world height), i.e. are still walking south
