@@ -2,7 +2,7 @@
 * Name: Farm_verification
 * Farm simulation, built step by step with AI assistance (Claude Code).
 * Author: annapilar
-* Version: 1.0
+* Version: 1.2
 * Tags: farm
 */
 
