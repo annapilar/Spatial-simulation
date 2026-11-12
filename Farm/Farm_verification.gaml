@@ -2,7 +2,7 @@
 * Name: Farm_verification
 * Farm simulation, built step by step with AI assistance (Claude Code).
 * Author: annapilar
-* Version: 1.2
+* Version: 1.3
 * Tags: farm
 */
 
@@ -48,10 +48,17 @@ species cow skills: [moving] {
 	rgb color <- rgb(139, 90, 43);
 	// Action neighbourhood of the cow: where it can be in the next step = quarter circle (cow_amplitude = 90°, i.e. ±45° around the current heading) with radius cow_speed; recalculated whenever it is used
 	geometry action_area -> circle(cow_speed) intersection cone(int(heading - cow_amplitude / 2), int(heading + cow_amplitude / 2));
+	// Distance (metres) the cow walked in the first time step; -1 means not measured yet
+	float first_step_distance <- -1.0;
 
-	// Reflex move: every step the cow walks cow_speed metres and turns randomly within ±cow_amplitude/2 of its current heading (correlated random walk, stays inside the world)
+	// Reflex move: every step the cow walks cow_speed metres and turns randomly within ±cow_amplitude/2 of its current heading (correlated random walk, stays inside the world); in the first step the distance actually walked is stored in first_step_distance
 	reflex move {
+		// Position of the cow before this step's move, used to measure the distance walked
+		point previous_location <- location;
 		do wander speed: cow_speed amplitude: cow_amplitude;
+		if (first_step_distance < 0) {
+			first_step_distance <- previous_location distance_to location;
+		}
 	}
 
 	// Aspect base: draws the cow as a filled brown circle
@@ -75,15 +82,22 @@ species sheep skills: [moving] {
 	rgb color <- #black;
 	// Action neighbourhood of the sheep: it moves straight ahead, so the area is a line of length sheep_speed in direction sheep_heading; recalculated whenever it is used
 	geometry action_area -> line(location, location + {cos(sheep_heading), sin(sheep_heading)} * sheep_speed);
+	// Distance (metres) the sheep walked in the first time step; -1 means not measured yet
+	float first_step_distance <- -1.0;
 
-	// Reflex move: every step the sheep walks sheep_speed metres straight in direction sheep_heading (south); if the south edge is closer than one step, the sheep is placed exactly on the edge, so it always reaches it and stops there
+	// Reflex move: every step the sheep walks sheep_speed metres straight in direction sheep_heading (south); if the south edge is closer than one step, the sheep is placed exactly on the edge, so it always reaches it and stops there; in the first step the distance actually walked is stored in first_step_distance
 	reflex move {
+		// Position of the sheep before this step's move, used to measure the distance walked
+		point previous_location <- location;
 		// Remaining distance (metres) between the sheep and the south edge of the world
 		float dist_to_edge <- world.shape.height - location.y;
 		if (dist_to_edge < sheep_speed) {
 			location <- {location.x, world.shape.height};
 		} else {
 			do move speed: sheep_speed heading: sheep_heading bounds: world.shape;
+		}
+		if (first_step_distance < 0) {
+			first_step_distance <- previous_location distance_to location;
 		}
 	}
 
@@ -155,6 +169,13 @@ experiment Farm type: gui {
 		display goat_distance_chart {
 			chart "Mean total distance travelled by goats" type: series {
 				data "Mean total distance (m)" value: mean(goat collect each.total_distance) color: rgb(230, 190, 60);
+			}
+		}
+		// Display with a scatterplot of the distance (metres) each sheep and each cow walked in the first time step, plotted at time step 1
+		display first_step_scatter {
+			chart "Distance walked in the first time step: sheep vs. cows" type: scatter x_label: "Time step (cycle)" y_label: "Distance in step 1 (m)" {
+				data "Sheep" value: sheep collect {1, each.first_step_distance} color: #black;
+				data "Cows" value: cow collect {1, each.first_step_distance} color: rgb(139, 90, 43);
 			}
 		}
 		// Monitor: number of sheep that have not yet reached the south edge of the world (y below the world height), i.e. are still walking south
